@@ -130,7 +130,10 @@
   html, body { width:100%; min-height:100%; }
   body { overscroll-behavior:none; -webkit-tap-highlight-color:transparent; }
   button, .charcard, .modecard, .levelcard { touch-action:manipulation; -webkit-user-select:none; user-select:none; }
+  #controls, #controls button { touch-action:none; }
+  #game { touch-action:none; }
   @media (max-width: 700px) {
+    html, body { width:100%; min-height:100%; overflow-x:hidden; }
     body { padding:0; background:var(--brown-deep); }
     #wrap { width:100%; max-width:none; min-height:100dvh; border-radius:0; box-shadow:none; }
     #topbar { padding:8px 10px; min-height:54px; }
@@ -162,6 +165,36 @@
     #btnJump { width:clamp(68px,20vw,82px); height:clamp(68px,20vw,82px); }
     #soundBtn { top:9px; right:9px; width:34px; height:34px; }
   }
+  /* En móvil, los menús necesitan más alto que el canvas 800x360.
+     Durante el juego se mantiene el canvas original; en los menús se usa el alto
+     disponible de la pantalla para evitar que botones/textos queden cortados. */
+  @media (max-width: 700px) {
+    #stage.screen-mode {
+      min-height: calc(100dvh - 54px - 54px - 84px);
+      background: rgba(67,41,25,0.94);
+    }
+    #stage.screen-mode > #game {
+      display:none;
+    }
+    #stage.screen-mode #screen {
+      position:relative;
+      inset:auto;
+      width:100%;
+      min-height:calc(100dvh - 54px - 54px - 84px);
+      max-height:none;
+      overflow-y:auto;
+      padding:22px 12px 26px;
+    }
+    #stage.screen-mode #screen .rowcards,
+    #stage.screen-mode #screen .levelcards {
+      width:100%;
+      max-width:100%;
+    }
+    #stage.screen-mode #screen .pixel {
+      flex-shrink:0;
+    }
+  }
+
   @media (orientation: landscape) and (max-height: 560px) {
     body { padding:0; }
     #topbar { min-height:46px; padding:5px 9px; }
@@ -1099,6 +1132,8 @@ function showScreen(kind){
   state.running = false;
   if(kind !== 'win' && kind !== 'lose') stopMusic();
   const screen = document.getElementById('screen');
+  const stage = document.getElementById('stage');
+  stage.classList.add('screen-mode');
   screen.classList.remove('hidden');
 
   if(kind === 'menu'){
@@ -1202,6 +1237,8 @@ function showScreen(kind){
 }
 
 function startGame(){
+  document.getElementById('stage').classList.remove('screen-mode');
+  document.getElementById('screen').classList.add('hidden');
   ensureAudio();
   startMusic(selectedMode.id);
   state.coins=0; state.score=0; state.won=false; state.lost=false; state.celebrating=false;
